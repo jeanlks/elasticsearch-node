@@ -20,17 +20,42 @@ async function run () {
 //   await client.indices.refresh({ index: 'game-of-thrones' })
 
   // Let's search!
-  const { body } = await client.search({
+
+
+  const { body: gte_lte } = await client.search({
+    index: 'bank',
+    body: {
+      query: {
+          bool: {
+            must : { match_all : {}},
+            filter : {
+                range: {
+                    age : { 
+                        gte : 35,
+                        lte : 37
+                    }
+                }
+            }
+          }
+              },
+      sort: {"account_number": "asc"}
+    }
+  })
+
+  console.log(gte_lte.hits.hits);
+
+  const { body: accounts_indiana } = await client.search({
     index: 'bank',
     // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
     body: {
       query: {
-        match_all: {  }
-      }
+        match: { state: "IN"  }
+      },
+      sort: {"account_number": "asc"}
     }
   })
 
-  console.log(body.hits.hits)
+  console.log(accounts_indiana.hits.hits)
 }
 
 run().catch(console.log)
