@@ -58,4 +58,42 @@ async function run () {
   console.log(accounts_indiana.hits.hits)
 }
 
-run().catch(console.log)
+//run().catch(console.log)
+
+async function insertName(req, res) { 
+    await client.index({
+    index: 'customers',
+    // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
+    body: {
+      name: req.query.name
+    }
+  });
+  await client.indices.refresh({ index: 'customers' });
+  res.send("inserted");
+}
+
+async function getNames(req, res) { 
+  const { body: customers } = await client.search({
+    index: 'customers',
+    // type: '_doc', // uncomment this line if you are using Elasticsearch ≤ 6
+    body: {
+      query: {
+        match_all: {  }
+      }
+    }
+  })
+  var result = [];
+  var hits = await customers.hits.hits;
+  for await (var hit of hits) { 
+    result.push( hit._source.name);
+  }
+  res.send(result);
+}
+
+function hello(req, res) { 
+  res.send("hello");
+}
+
+module.exports.insertName = insertName
+module.exports.getNames = getNames
+module.exports.hello = hello
